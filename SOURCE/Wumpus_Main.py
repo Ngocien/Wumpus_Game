@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 import copy
 import numpy as np
-from data import *
+from Data import *
 from Objects import *
 
 def handle_input():
