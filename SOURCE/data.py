@@ -84,20 +84,4 @@ def scan_maze(maze, size):
                 s = Stench("../IMAGE/stench.png", j ,i)
                 stench.append(s)
             elif maze[i][j] == 'A':
-                agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png" j ,i)
-
-
-    
-            
-    
-
-            
-
-
-
-
-
-
-
-
-    
+                agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png", j ,i)
