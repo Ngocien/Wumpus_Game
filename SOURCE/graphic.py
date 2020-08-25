@@ -50,6 +50,21 @@ def OpenRoom():
 
 	Agent.display(C)
 
+def OpenAll():
+	for br in ListBrick:
+		br.destroy(C)
+	for w in ListWumpus:
+		w.display(C)
+	for p in ListPit:
+		p.display(C)
+	for b in ListBreeze:
+		b.display(C)
+	for g in ListGold:
+		g.display(C)
+
+	Agent.display(C)
+	top.update()	
+
 def Shoot():
 	print("Chíu Chíu")
 	if Agent.status == "Right":
@@ -78,6 +93,8 @@ def key_pressed(event):
 	global Agent
 
 	if event.keysym == "Escape":
+		OpenAll()
+		time.sleep(5)
 		top.destroy()
 		del Agent
 		Menu("maze01")

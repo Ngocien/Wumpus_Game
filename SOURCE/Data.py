@@ -88,12 +88,12 @@ def random_Maze():
     size = 10
     maze = []
 
-    objects = ["-", "P", "W", "G"]
+    objects = ["-", "-", "-", "P", "-", "-", "W", "-", "-", "G", "-", "-"]
 
     for i in range(size):
         temp = []
         for _ in range(size):
-            o = np.random.randint(0,4)
+            o = np.random.randint(0,len(objects))
             temp.append(objects[o])
 
         maze.append(temp)
