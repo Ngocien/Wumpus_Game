@@ -9,7 +9,6 @@ def get_maze(filename):
     return maze, int(size)
 
 maze , size = get_maze("../DATA/maze01.txt")
-print("maze" ,maze)
 
 def scan_index(maze,size):
     list_adj = []
@@ -59,9 +58,6 @@ def scan_index(maze,size):
                 temp.append((i*10+j+1,maze[i][j+1]))
             list_adj.append(temp)
     return list_adj    
-list_adj = scan_maze(maze,size)  
-print( list_adj)       
-
 
 def scan_maze(maze, size):
     wumpus, pit, breeze, stench, gold = [], [] ,[] ,[] ,[]
@@ -85,3 +81,6 @@ def scan_maze(maze, size):
                 stench.append(s)
             elif maze[i][j] == 'A':
                 agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png", j ,i)
+
+def random_Maze():
+    print("Random")
