@@ -1,4 +1,6 @@
 import numpy as np
+from Objects import *
+
 def get_maze(filename):
     f = open(filename, 'r')
     maze = []
@@ -7,8 +9,6 @@ def get_maze(filename):
     for i in range(len(temp)):
         maze.append(temp[i].rstrip('\n').split('.'))
     return maze, int(size)
-
-maze , size = get_maze("../DATA/maze01.txt")
 
 def scan_index(maze,size):
     list_adj = []
@@ -60,27 +60,73 @@ def scan_index(maze,size):
     return list_adj    
 
 def scan_maze(maze, size):
-    wumpus, pit, breeze, stench, gold = [], [] ,[] ,[] ,[]
+    wumpus, pit, breeze, gold, brick = [], [] ,[] ,[] ,[]
     agent = None
     for i in range(size):
         for j in range(size):
-            if maze[i][j] == 'W':
-                w = Wumpus("../IMAGE/Wumpus.png", j ,i)
-                wumpus.append(w)
-            elif maze[i][j] == 'P':
-                p = Pit("../IMAGE/pit.png", j ,i)
-                pit.append(p)
-            elif maze[i][j] == 'B':
-                b = Breeze("../IMAGE/breeze.png", j ,i)
-                breeze.append(b)
-            elif maze[i][j] == 'G':
-                g = Gold("../IMAGE/gold.png", j ,i)
-                gold.append(g)
-            elif maze[i][j] == 'S':
-                s = Stench("../IMAGE/stench.png", j ,i)
-                stench.append(s)
-            elif maze[i][j] == 'A':
-                agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png", j ,i)
+            br = Brick("..//IMAGE/brick.png", j, i)
+            brick.append(br)
+            for t in maze[i][j]:
+                if t == 'W':
+                    w = Wumpus("../IMAGE/Wumpus.png", j ,i)
+                    wumpus.append(w)
+                if t == 'P':
+                    p = Pit("../IMAGE/pit.png", j ,i)
+                    pit.append(p)
+                if t == 'B':
+                    b = Breeze("../IMAGE/breeze.png", j ,i)
+                    breeze.append(b)
+                if t == 'G':
+                    g = Gold("../IMAGE/gold.png", j ,i)
+                    gold.append(g)
+                if t == 'A':
+                    agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png", j ,i)
+
+    return agent, wumpus, pit, breeze, gold, brick
 
 def random_Maze():
-    print("Random")
+    size = 10
+    maze = []
+
+    objects = ["-", "P", "W", "G"]
+
+    for i in range(size):
+        temp = []
+        for _ in range(size):
+            o = np.random.randint(0,4)
+            temp.append(objects[o])
+
+        maze.append(temp)
+
+
+    for i in range(size):
+        for j in range(size):
+            if "P" in maze[i][j]:
+                if i > 0 and "B" not in maze[i-1][j] and "P" not in maze[i-1][j]:
+                    maze[i-1][j] += "B"
+                if i+1 < size and "B" not in maze[i+1][j] and "P" not in maze[i+1][j] :
+                    maze[i+1][j] += "B"
+                if j > 0 and "B" not in maze[i][j-1] and "P" not in maze[i][j-1]:
+                    maze[i][j-1] += "B"
+                if j+1 < size and "B" not in maze[i][j+1] and "P" not in maze[i][j+1]:
+                    maze[i][j+1] += "B"
+            
+            elif "W" in maze[i][j]:
+                if i > 0 and "S" not in maze[i-1][j] and "W" not in maze[i-1][j]:
+                    maze[i-1][j] += "S"
+                if i+1 < size and "S" not in maze[i+1][j] and "W" not in maze[i+1][j] :
+                    maze[i+1][j] += "S"
+                if j > 0 and "S" not in maze[i][j-1] and "W" not in maze[i][j-1]:
+                    maze[i][j-1] += "S"
+                if j+1 < size and "S" not in maze[i][j+1] and "W" not in maze[i][j+1]:
+                    maze[i][j+1] += "S"
+
+    x = 0
+    y = 0
+    while maze[x][y] != "-":
+        x = np.random.randint(0, size)
+        y = np.random.randint(0, size)
+
+    maze[x][y] = "A"
+
+    return maze,size
