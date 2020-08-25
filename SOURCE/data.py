@@ -1,19 +1,20 @@
 import numpy as np
 def get_maze(filename):
     f = open(filename, 'r')
-    maze, size= [],[]
+    maze = []
     size = f.readline()
     temp = f.readlines()
     for i in range(len(temp)):
         maze.append(temp[i].rstrip('\n').split('.'))
     return maze, int(size)
 
-maze , size = get_maze("maze01.txt")
+maze , size = get_maze("../DATA/maze01.txt")
+print("maze" ,maze)
 
-def scan_maze(maze,size):
+def scan_index(maze,size):
     list_adj = []
-    for i in range(size): #i là dòng
-        for j in range(size): #j là cột
+    for i in range(len(maze)): #i là dòng
+        for j in range(len(maze)): #j là cột
             temp = []
             if i==0 and j ==0: # gốc trái trên
                 temp.append(((i+1)*10,maze[i+1][j]))
@@ -58,40 +59,45 @@ def scan_maze(maze,size):
                 temp.append((i*10+j+1,maze[i][j+1]))
             list_adj.append(temp)
     return list_adj    
-list_adj = scan_maze(maze,size)         
+list_adj = scan_maze(maze,size)  
+print( list_adj)       
 
-def check(obj, array):
-    for i in range(len(array)):
-        if obj in array[i]:
-            return True
-list_adj = scan_maze(maze,size)          
 
-def list_obj (obj, list_adj):
-    lisst= []
-    for i in range(len(list_adj)):
-        for j in range(len(list_adj[i])):
-            if len(list_adj[i][j][1]) != 1 and check(obj,list_adj[i][j][1])== True:
-                if list_adj[i][j][0] not in lisst:
-                    lisst.append(list_adj[i][j][0])
-                    
-            elif len(list_adj[i][j][1]) == 1 and obj in list_adj[i][j][1]:
-                if list_adj[i][j][0] not in lisst:
-                    lisst.append(list_adj[i][j][0])
-    return lisst
+def scan_maze(maze, size):
+    wumpus, pit, breeze, stench, gold = [], [] ,[] ,[] ,[]
+    agent = None
+    for i in range(size):
+        for j in range(size):
+            if maze[i][j] == 'W':
+                w = Wumpus("../IMAGE/Wumpus.png", j ,i)
+                wumpus.append(w)
+            elif maze[i][j] == 'P':
+                p = Pit("../IMAGE/pit.png", j ,i)
+                pit.append(p)
+            elif maze[i][j] == 'B':
+                b = Breeze("../IMAGE/breeze.png", j ,i)
+                breeze.append(b)
+            elif maze[i][j] == 'G':
+                g = Gold("../IMAGE/gold.png", j ,i)
+                gold.append(g)
+            elif maze[i][j] == 'S':
+                s = Stench("../IMAGE/stench.png", j ,i)
+                stench.append(s)
+            elif maze[i][j] == 'A':
+                agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png" j ,i)
 
-list_wumpus = list_obj('W', list_adj)
-print("list_wumpus", list_wumpus)
 
-list_breeze = list_obj('B', list_adj)
-print("list_breeze", list_breeze)
+    
+            
+    
 
-list_pit = list_obj('P', list_adj)
-print("list_pit", list_pit)
+            
 
-list_stench = list_obj('S', list_adj)
-print("list_stench", list_stench)
 
-list_gold = list_obj('G', list_adj)
-print("list_gold", list_gold)
+
+
+
+
+
 
     
