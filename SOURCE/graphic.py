@@ -1,10 +1,10 @@
 from tkinter import *
 import tkinter.font  as font
 from PIL import ImageTk, Image, ImageOps
+from matplotlib import pyplot as plt
 from Data import *
 from Objects import *
 unit = 50
-maze , size = get_maze("../DATA/maze01.txt")
 
 def handle_input():
 	global input_map
@@ -22,6 +22,8 @@ def handle_input():
 	Agent, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = scan_maze(lst, size)
 
 def OpenRoom():
+	global score, label_score
+	
 	index = Agent.index
 	
 	for br in ListBrick:
@@ -48,13 +50,19 @@ def OpenRoom():
 			g.display(C)
 			break
 
+	score -= 10
+	display_score()
+	Door.display(C)
 	Agent.display(C)
+	top.update()
 
 def OpenAll():
 	for br in ListBrick:
 		br.destroy(C)
 	for w in ListWumpus:
 		w.display(C)
+		for s in w.ListStench:
+			s.display(C)
 	for p in ListPit:
 		p.display(C)
 	for b in ListBreeze:
@@ -62,10 +70,12 @@ def OpenAll():
 	for g in ListGold:
 		g.display(C)
 
+	Door.display(C)
 	Agent.display(C)
 	top.update()	
 
 def Shoot():
+	
 	print("Chíu Chíu")
 	if Agent.status == "Right":
 		index = Agent.index + size
@@ -80,19 +90,25 @@ def Shoot():
 		if ListWumpus[i].index == index:
 			ListWumpus[i].destroy(C)
 			del ListWumpus[i]
+			
 			break
 
 def CollectGold():
+	global score
 	for i in range(len(ListGold)):
 		if ListGold[i].index == Agent.index:
 			ListGold[i].destroy(C)
 			del ListGold[i]
+			score += 100
+			display_score()
 			break
 
 def key_pressed(event):
 	global Agent
-
+	global score 
 	if event.keysym == "Escape":
+		score +=10
+		display_score()
 		OpenAll()
 		time.sleep(5)
 		top.destroy()
@@ -100,41 +116,57 @@ def key_pressed(event):
 		Menu("maze01")
 	elif event.keysym == "space":
 		Shoot()
-		OpenRoom()
+		score -= 100
+		display_score()
+		# OpenRoom()
 	elif event.keysym == "Return": # Enter
 		CollectGold()
+	
 	else:
+		pre_index = Agent.index
 		Agent.key_move(event.keysym, C)
-		OpenRoom()
-		top.update()
+		if pre_index != Agent.index:
+			OpenRoom()
 
-def credit():
-    print("credit")
 def Exit():
-    print("exit")
+	exit()
 
 def Play():
-    global top, C
-    global Agent
-    global unit, size
-    global lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
-    global label_id, score
-    top = Tk()
-    lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = [],[],[],[],[],[],[]
-    score = 0
-    unit = 70
-    handle_input()
+	global top, C
+	global Agent, Door
+	global unit, size
+	global lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
+	global label_score, score
+	
+	score = 0
+	top = Tk()
+	lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = [],[],[],[],[],[],[]
+	score = 1000
+	unit = 70
+	handle_input()
 
-    top.title("WUMPUS GAME")
-    C = Canvas(top, height = size*unit, width = size*unit, background = 'light gray')
+	top.title("WUMPUS GAME")
+	C = Canvas(top, height = (size)*unit, width = (size+5)*unit, background = '#d5dde0')
 
-    C.pack()
+	C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
 
-    draw_maze()
+	img = Image.open("../IMAGE/control.png")
+	img = img.resize((unit*(size-5),unit*(size-3)), Image.ANTIALIAS)
+	img = ImageTk.PhotoImage(img)
+	C.create_image((size)*unit, (size+2)*unit/2 - 2*unit, image = [img], anchor = 'nw')
 
+	C.pack()
 
-    top.bind("<Key>", key_pressed)
-    top.mainloop()
+	draw_maze()
+	Door = door(Agent.x, Agent.y)
+
+	top.bind("<Key>", key_pressed)
+	top.mainloop()
 
 def btn_Play():
 	menu.destroy()
@@ -149,7 +181,7 @@ def Menu(maze):
 	global menu
 	global input_map
 	input_map = maze
-
+	unit = 50
 	menu = Tk()
 	menu.title("MENU WUMPUS")
 
@@ -157,30 +189,34 @@ def Menu(maze):
 	img = Image.open("../IMAGE/background.png")
 	img = img.resize((unit*(size),unit*size), Image.ANTIALIAS)
 	img = ImageTk.PhotoImage(img)
-	C.create_image(0, 0, image = img, anchor = 'nw')
-
+	C.create_image(0, 0, image = [img], anchor = 'nw')
 	myfont = font.Font(size=20)
-	button1 = Button(menu, text = "PLAY",width=10,anchor = "center" , command = btn_Play, pady=8)
+	button1 = Button(menu, text = "PLAY MODE",width=12,anchor = "center" , command = btn_Play, pady=10)
 	button1['font'] = myfont
 	button1.configure(activebackground = "#33B5E5", relief = GROOVE)
-	button1.place(x = 500,y = 150)
+	button1.place(x = 490,y = 150)
 
-	button2 = Button(menu, text = "CREDIT", width=10,anchor = "center" , command = credit, pady=8)
+	button2 = Button(menu, text = "RUN MODE", width=12,anchor = "center" , command = btn_Play, pady=10)
 	button2['font'] = myfont
 	button2.configure(activebackground = "#33B5E5", relief = GROOVE)
-	button2.place(x = 500,y = 250)
+	button2.place(x = 490,y = 250)
 
-	button3 = Button(menu, text = "EXIT",width=10,anchor = "center"  , command = Exit, pady=8)
+	button3 = Button(menu, text = "EXIT",width=12,anchor = "center"  , command = Exit, pady=10)
 	button3['font'] = myfont
 	button3.configure(activebackground = "#33B5E5", relief = GROOVE)
-	button3.place(x = 500,y = 350)
+	button3.place(x = 490,y = 350)
 
-	C.create_text((size-4)*unit + 3*unit, size*unit/2 - 3*unit, fill = 'Red', text = " W", font=('Arial',30,'bold'))
-	C.create_text((size-4)*unit + 4*unit, size*unit/2 - 3*unit, fill = 'dark orange', text = "U", font=('Arial',30,'bold'))
-	C.create_text((size-4)*unit + 5*unit, size*unit/2 - 3*unit, fill = 'yellow', text = "M", font=('Arial',30,'bold'))
-	C.create_text((size-4)*unit + 6*unit, size*unit/2 - 3*unit, fill = 'lawn green', text = "P", font=('Arial',30,'bold'))
-	C.create_text((size-4)*unit + 7*unit, size*unit/2 - 3*unit, fill = 'aqua', text = "U", font=('Arial',30,'bold'))
-	C.create_text((size-4)*unit + 8*unit, size*unit/2 - 3*unit, fill = 'dark violet', text = "S", font=('Arial',30,'bold'))
+	img1 = Image.open("../IMAGE/copyright.png")
+	img1 = img1.resize((unit,unit), Image.ANTIALIAS)
+	img1 = ImageTk.PhotoImage(img1)
+	C.create_image(700,450 , image = [img1], anchor = 'nw')
+
+	C.create_text((size-3)*unit + 3*unit, size*unit/2 - 3*unit, fill = 'Red', text = " W", font=('Arial',30,'bold'))
+	C.create_text((size-3)*unit + 3.9*unit, size*unit/2 - 3*unit, fill = 'dark orange', text = "U", font=('Arial',30,'bold'))
+	C.create_text((size-3)*unit + 4.7*unit, size*unit/2 - 3*unit, fill = 'yellow', text = "M", font=('Arial',30,'bold'))
+	C.create_text((size-3)*unit + 5.4*unit, size*unit/2 - 3*unit, fill = 'lawn green', text = "P", font=('Arial',30,'bold'))
+	C.create_text((size-3)*unit + 6.1*unit, size*unit/2 - 3*unit, fill = 'aqua', text = "U", font=('Arial',30,'bold'))
+	C.create_text((size-3)*unit + 6.8*unit, size*unit/2 - 3*unit, fill = 'dark violet', text = "S", font=('Arial',30,'bold'))
 
 	menu.bind("<Key>", key_Menu)
 	C.pack()
@@ -190,7 +226,7 @@ def draw_maze():
 	global Agent
 	global ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
 	global C
-
+	
 	Agent.display(C)
 
 	for br in ListBrick:
@@ -198,6 +234,11 @@ def draw_maze():
 		if br.index == Agent.index:
 			br.destroy(C)
 
-	for i in range(10):
+	for i in range(11):
 		C.create_line(0, i*unit, size*unit, i*unit)
 		C.create_line(i*unit, 0, i*unit, size*unit) 
+
+def display_score():
+	global label_score
+	C.delete(label_score)
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))

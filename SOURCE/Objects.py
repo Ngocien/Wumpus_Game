@@ -26,11 +26,21 @@ class Agent(object):
         self.y = y
         self.index = x*size + y
         self.pic = None
+        self.init_room = self.index
         self.visited = [(self.index, -1)]   #(current, parent)
 
     def display(self, C):
-        C.delete(self.pic)
+        if self.x < 0:
+            self.x = 0
+        if self.y < 0:
+            self.y = 0
+        if self.x == size:
+            self.x = size - 1
+        if self.y == size:
+            self.y = size - 1
 
+        C.delete(self.pic)
+        
         self.pic = C.create_image(self.x * unit + 10, self.y * unit + 10, image = self.img, anchor = 'nw')
 
     def key_move(self, keysym, C):
@@ -79,7 +89,7 @@ class Agent(object):
 
         elif tile == self.index + 1:  # down
             self.key_move("Down", C)
-
+    
 #Wumpus class
 class Wumpus (object):
     def __init__(self, imgpath, x, y):
@@ -119,8 +129,7 @@ class Wumpus (object):
                 return True
         return False
 
-
-#Pit class
+#Pit class  
 class Pit (object):
     def __init__(self, imgpath, x, y):
         temp = Image.open(imgpath)
@@ -204,3 +213,16 @@ class Brick (object):
     def destroy(self, C):
         C.delete(self.pic)
 
+
+class door(object):
+    def __init__(self,x,y):
+        temp = Image.open("../IMAGE/door.png")
+        img2 = temp.resize((unit, unit), Image.ANTIALIAS)
+        self.img = ImageTk.PhotoImage(img2)    
+        self.x = x
+        self.y = y
+        self.pic = None
+
+    def display(self, C):
+        C.delete(self.pic)
+        self.pic = C.create_image(self.x * unit, self.y * unit, image = self.img, anchor = 'nw')
