@@ -39,6 +39,8 @@ class Agent(object):
         if self.y == size:
             self.y = size - 1
 
+        self.index = self.x*size + self.y
+        print(self.index)
         C.delete(self.pic)
         
         self.pic = C.create_image(self.x * unit + 10, self.y * unit + 10, image = self.img, anchor = 'nw')
@@ -67,6 +69,7 @@ class Agent(object):
             else:
                 self.status = "Up"
             self.img = ImageTk.PhotoImage(self.up)
+        
         elif keysym == "Down":
             if self.status == "Down":
                 self.y += 1
@@ -77,7 +80,7 @@ class Agent(object):
 
         self.display(C)
 
-    def path_move(self, tile, C):
+    def tile_move(self, tile, C):
         if tile == self.index + size:  # right
             self.key_move("Right", C)
 
@@ -213,7 +216,7 @@ class Brick (object):
     def destroy(self, C):
         C.delete(self.pic)
 
-
+#Door
 class door(object):
     def __init__(self,x,y):
         temp = Image.open("../IMAGE/door.png")
@@ -221,23 +224,35 @@ class door(object):
         self.img = ImageTk.PhotoImage(img2)    
         self.x = x
         self.y = y
+        self.index = x*size + y
         self.pic = None
 
     def display(self, C):
-        C.delete(self.pic)
         self.pic = C.create_image(self.x * unit, self.y * unit, image = self.img, anchor = 'nw')
 
-
+#laser
 class laser(object):
     def __init__(self,x,y):
         temp = Image.open("../IMAGE/laser.png")
-        img2 = temp.resize((10, unit), Image.ANTIALIAS)
-        self.img = ImageTk.PhotoImage(img2)    
+        img1 = temp.resize((5, unit), Image.ANTIALIAS)
+        img2 = temp.resize((unit, 5), Image.ANTIALIAS)
+ 
+        self.vertical = ImageTk.PhotoImage(img1)   
+        self.horizontal = ImageTk.PhotoImage(img2)
+
         self.x = x
         self.y = y
         self.pic = None
 
-    def display(self, C):
-        self.pic = C.create_image(self.x * (unit), self.y * (unit), image = self.img, anchor = 'nw')
-        time.sleep(1) 
+    def display(self, C, status):
+        if status == "Right" :
+            self.pic = C.create_image(self.x * (unit) + 50, self.y * (unit) + unit/2, image = self.horizontal, anchor = 'nw')
+        elif status == "Left":
+            self.pic = C.create_image(self.x * (unit) - 50, self.y * (unit) + unit/2, image = self.horizontal, anchor = 'nw')
+        elif status == "Down":
+            self.pic = C.create_image(self.x * (unit) + unit/2, self.y * (unit) + 50, image = self.vertical, anchor = 'nw')
+        else:
+            self.pic = C.create_image(self.x * (unit) + unit/2, self.y * (unit) - 50, image = self.vertical, anchor = 'nw')
+
+    def destroy(self, C):
         C.delete(self.pic)

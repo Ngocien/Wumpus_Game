@@ -4,7 +4,6 @@ from PIL import ImageTk, Image, ImageOps
 from matplotlib import pyplot as plt
 from Data import *
 from Objects import *
-unit = 50
 
 def handle_input():
 	global input_map
@@ -23,20 +22,13 @@ def handle_input():
 
 def OpenRoom():
 	global score, label_score
+	global Agent
 	
 	index = Agent.index
 	
 	for br in ListBrick:
 		if br.index == index:
 			br.destroy(C)
-			break
-	for w in ListWumpus:
-		if w.index == index:
-			w.display(C)
-			break
-	for p in ListPit:
-		if p.index == index:
-			p.display(C)
 			break
 	for b in ListBreeze:
 		if b.index == index:
@@ -55,6 +47,27 @@ def OpenRoom():
 	Door.display(C)
 	Agent.display(C)
 	top.update()
+
+	index = Agent.index
+	dead = False
+	#dead
+	for w in ListWumpus:
+		if w.index == index:
+			w.display(C)
+			dead = True
+			break
+	for p in ListPit:
+		if p.index == index:
+			p.display(C)
+			dead = True
+			break
+
+	if dead:
+		top.update()
+		time.sleep(1)
+		Game_over()
+		del Agent
+		Menu("random")
 
 def OpenAll():
 	for br in ListBrick:
@@ -76,7 +89,9 @@ def OpenAll():
 
 def Shoot():
 	print("Chíu Chíu")
-	
+	global score
+	score -= 100
+	display_score()
 
 	if Agent.status == "Right":
 		index = Agent.index + size
@@ -87,10 +102,13 @@ def Shoot():
 	else:
 		index = Agent.index + 1
 
-	global Laser
-	Laser = laser(index // size, index % size)
-	Laser.display(C)
-	
+	Laser = laser(Agent.index // size, Agent.index % size)
+	Laser.display(C, Agent.status)
+	top.update()
+	time.sleep(0.2)
+	Laser.destroy(C)
+	del Laser 
+
 	for i in range(len(ListWumpus)):
 		if ListWumpus[i].index == index:
 			ListWumpus[i].destroy(C)
@@ -110,25 +128,15 @@ def CollectGold():
 
 def key_pressed(event):
 	global Agent
-	global score 
 	if event.keysym == "Escape":
-		score +=10
-		display_score()
-		OpenAll()
-		time.sleep(2)
-		top.destroy()
-		del Agent
 		Game_over()
-		Menu("maze01")
+		del Agent
+		Menu("random")
 
 	elif event.keysym == "space":
 		Shoot()
-		score -= 100
-		display_score()
-		# OpenRoom()
 	elif event.keysym == "Return": # Enter
 		CollectGold()
-	
 	else:
 		pre_index = Agent.index
 		Agent.key_move(event.keysym, C)
@@ -137,43 +145,6 @@ def key_pressed(event):
 
 def Exit():
 	exit()
-
-def Play():
-	global top, C
-	global Agent, Door,Laser
-	global unit, size
-	global lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
-	global label_score, score
-	
-	score = 0
-	top = Tk()
-	lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = [],[],[],[],[],[],[]
-	score = 1000
-	unit = 70
-	handle_input()
-
-	top.title("WUMPUS GAME")
-	C = Canvas(top, height = (size)*unit, width = (size+5)*unit, background = '#d5dde0')
-
-	C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
-	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
-
-	img = Image.open("../IMAGE/control.png")
-	img = img.resize((unit*(size-5),unit*(size-3)), Image.ANTIALIAS)
-	img = ImageTk.PhotoImage(img)
-	C.create_image((size)*unit, (size+2)*unit/2 - 2*unit, image = [img], anchor = 'nw')
-
-	C.pack()
-
-	draw_maze()
-	Door = door(Agent.x, Agent.y)
-
-	top.bind("<Key>", key_pressed)
-	top.mainloop()
 
 def btn_Play():
 	menu.destroy()
@@ -250,8 +221,15 @@ def display_score():
 	C.delete(label_score)
 	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
 
-
 def Game_over():
+	global score
+	score += 10
+	display_score()
+
+	OpenAll()
+	time.sleep(2)
+	top.destroy()
+
 	global end
 	unit = 30
 	size = 20
@@ -260,25 +238,54 @@ def Game_over():
 
 	C = Canvas(end,width= size*unit, height=size*(unit-15), background='black')
 
-	# C.create_text((size-10)*unit - 7.5*unit , size*unit/2 - 8*unit , fill = 'Red', text = " G", font=('Arial',50,'bold'))
-	# C.create_text((size-10)*unit - 5* unit, size*unit/2 - 8*unit, fill = 'dark orange', text = "A", font=('Arial',50,'bold'))
-	# C.create_text((size-10)*unit -3*unit, size*unit/2 - 8*unit, fill = 'yellow', text = "M", font=('Arial',50,'bold'))
-	# C.create_text((size- 10)*unit - 1*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "E", font=('Arial',50,'bold'))
-	# C.create_text((size-10)*unit + 1*unit, size*unit/2 - 8*unit, fill = 'aqua', text = "O", font=('Arial',50,'bold'))
-	# C.create_text((size-10)*unit + 3*unit, size*unit/2 - 8*unit, fill = 'dark violet', text = "V", font=('Arial',50,'bold'))
-	# C.create_text((size-10)*unit  + 5* unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "E", font=('Arial',50,'bold'))
-	# C.create_text((size-10)*unit + 7*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "R", font=('Arial',50,'bold'))
-
-	C.create_text((size-10)*unit - 7.5*unit , size*unit/2 - 8*unit , fill = 'Red', text = " C", font=('Arial',50,'bold'))
-	C.create_text((size-10)*unit - 5* unit, size*unit/2 - 8*unit, fill = 'dark orange', text = "O", font=('Arial',50,'bold'))
-	C.create_text((size-10)*unit -3*unit, size*unit/2 - 8*unit, fill = 'yellow', text = "N", font=('Arial',50,'bold'))
-	C.create_text((size- 10)*unit - 1*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "G", font=('Arial',50,'bold'))
-	C.create_text((size-10)*unit + 1*unit, size*unit/2 - 8*unit, fill = 'aqua', text = "R", font=('Arial',50,'bold'))
-	C.create_text((size-10)*unit + 3*unit, size*unit/2 - 8*unit, fill = 'dark violet', text = "A", font=('Arial',50,'bold'))
-	C.create_text((size-10)*unit  + 5* unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "T", font=('Arial',50,'bold'))
-	C.create_text((size-10)*unit + 7*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "S", font=('Arial',50,'bold'))
-
+	if Door.index == Agent.index:
+		C.create_text((size-10)*unit, size*unit/2 - 8*unit , fill = 'yellow', text = " CONGRATS ", font=('Arial',50,'bold'))
+		
+	else:
+		C.create_text((size-10)*unit, size*unit/2 - 8*unit , fill = 'yellow', text = " GAME OVER ", font=('Arial',50,'bold'))
 	label_score = C.create_text((size-10)*unit + 0.5*unit, size*unit/2 - 3*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
 
 	C.pack()
-	menu.mainloop()
+	end.mainloop()
+
+def Play():
+	global top, C
+	global Agent, Door
+	global unit, size
+	global lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
+	global label_score, score
+	
+	score = 0
+	top = Tk()
+	lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = [],[],[],[],[],[],[]
+	score = 1000
+	unit = 70
+	handle_input()
+
+	top.title("WUMPUS GAME")
+	C = Canvas(top, height = (size)*unit, width = (size+5)*unit, background = '#d5dde0')
+
+	C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+
+	img = Image.open("../IMAGE/control.png")
+	img = img.resize((unit*(size-5),unit*(size-3)), Image.ANTIALIAS)
+	img = ImageTk.PhotoImage(img)
+	C.create_image((size)*unit, (size+2)*unit/2 - 2*unit, image = [img], anchor = 'nw')
+
+	C.pack()
+
+	draw_maze()
+	Door = door(Agent.x, Agent.y)
+
+	top.bind("<Key>", key_pressed)
+	top.mainloop()
+
+
+
+# def Move():
+
