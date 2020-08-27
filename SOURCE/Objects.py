@@ -226,3 +226,18 @@ class door(object):
     def display(self, C):
         C.delete(self.pic)
         self.pic = C.create_image(self.x * unit, self.y * unit, image = self.img, anchor = 'nw')
+
+
+class laser(object):
+    def __init__(self,x,y):
+        temp = Image.open("../IMAGE/laser.png")
+        img2 = temp.resize((10, unit), Image.ANTIALIAS)
+        self.img = ImageTk.PhotoImage(img2)    
+        self.x = x
+        self.y = y
+        self.pic = None
+
+    def display(self, C):
+        self.pic = C.create_image(self.x * (unit), self.y * (unit), image = self.img, anchor = 'nw')
+        time.sleep(1) 
+        C.delete(self.pic)

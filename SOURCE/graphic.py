@@ -75,8 +75,9 @@ def OpenAll():
 	top.update()	
 
 def Shoot():
-	
 	print("Chíu Chíu")
+	
+
 	if Agent.status == "Right":
 		index = Agent.index + size
 	elif Agent.status == "Left":
@@ -86,6 +87,10 @@ def Shoot():
 	else:
 		index = Agent.index + 1
 
+	global Laser
+	Laser = laser(index // size, index % size)
+	Laser.display(C)
+	
 	for i in range(len(ListWumpus)):
 		if ListWumpus[i].index == index:
 			ListWumpus[i].destroy(C)
@@ -110,10 +115,12 @@ def key_pressed(event):
 		score +=10
 		display_score()
 		OpenAll()
-		time.sleep(5)
+		time.sleep(2)
 		top.destroy()
 		del Agent
+		Game_over()
 		Menu("maze01")
+
 	elif event.keysym == "space":
 		Shoot()
 		score -= 100
@@ -133,7 +140,7 @@ def Exit():
 
 def Play():
 	global top, C
-	global Agent, Door
+	global Agent, Door,Laser
 	global unit, size
 	global lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
 	global label_score, score
@@ -242,3 +249,36 @@ def display_score():
 	global label_score
 	C.delete(label_score)
 	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+
+
+def Game_over():
+	global end
+	unit = 30
+	size = 20
+	end= Tk()
+	end.title("GAME OVER")
+
+	C = Canvas(end,width= size*unit, height=size*(unit-15), background='black')
+
+	# C.create_text((size-10)*unit - 7.5*unit , size*unit/2 - 8*unit , fill = 'Red', text = " G", font=('Arial',50,'bold'))
+	# C.create_text((size-10)*unit - 5* unit, size*unit/2 - 8*unit, fill = 'dark orange', text = "A", font=('Arial',50,'bold'))
+	# C.create_text((size-10)*unit -3*unit, size*unit/2 - 8*unit, fill = 'yellow', text = "M", font=('Arial',50,'bold'))
+	# C.create_text((size- 10)*unit - 1*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "E", font=('Arial',50,'bold'))
+	# C.create_text((size-10)*unit + 1*unit, size*unit/2 - 8*unit, fill = 'aqua', text = "O", font=('Arial',50,'bold'))
+	# C.create_text((size-10)*unit + 3*unit, size*unit/2 - 8*unit, fill = 'dark violet', text = "V", font=('Arial',50,'bold'))
+	# C.create_text((size-10)*unit  + 5* unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "E", font=('Arial',50,'bold'))
+	# C.create_text((size-10)*unit + 7*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "R", font=('Arial',50,'bold'))
+
+	C.create_text((size-10)*unit - 7.5*unit , size*unit/2 - 8*unit , fill = 'Red', text = " C", font=('Arial',50,'bold'))
+	C.create_text((size-10)*unit - 5* unit, size*unit/2 - 8*unit, fill = 'dark orange', text = "O", font=('Arial',50,'bold'))
+	C.create_text((size-10)*unit -3*unit, size*unit/2 - 8*unit, fill = 'yellow', text = "N", font=('Arial',50,'bold'))
+	C.create_text((size- 10)*unit - 1*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "G", font=('Arial',50,'bold'))
+	C.create_text((size-10)*unit + 1*unit, size*unit/2 - 8*unit, fill = 'aqua', text = "R", font=('Arial',50,'bold'))
+	C.create_text((size-10)*unit + 3*unit, size*unit/2 - 8*unit, fill = 'dark violet', text = "A", font=('Arial',50,'bold'))
+	C.create_text((size-10)*unit  + 5* unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "T", font=('Arial',50,'bold'))
+	C.create_text((size-10)*unit + 7*unit, size*unit/2 - 8*unit, fill = 'lawn green', text = "S", font=('Arial',50,'bold'))
+
+	label_score = C.create_text((size-10)*unit + 0.5*unit, size*unit/2 - 3*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+
+	C.pack()
+	menu.mainloop()
