@@ -89,7 +89,7 @@ def OpenAll():
 
 def Shoot():
 	print("Chíu Chíu")
-	global score
+	global score, wumpus
 	score -= 100
 	display_score()
 
@@ -108,22 +108,27 @@ def Shoot():
 	time.sleep(0.2)
 	Laser.destroy(C)
 	del Laser 
-
+	
 	for i in range(len(ListWumpus)):
 		if ListWumpus[i].index == index:
+			wumpus -= 1
+			display_wumpus()
 			ListWumpus[i].destroy(C)
 			del ListWumpus[i]
 			
 			break
 
 def CollectGold():
-	global score
+	global score, gold
 	for i in range(len(ListGold)):
 		if ListGold[i].index == Agent.index:
 			ListGold[i].destroy(C)
 			del ListGold[i]
 			score += 100
+			gold -= 1
+
 			display_score()
+			display_gold()
 			break
 
 def key_pressed(event):
@@ -219,7 +224,17 @@ def draw_maze():
 def display_score():
 	global label_score
 	C.delete(label_score)
-	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+
+def display_gold():
+	global label_gold
+	C.delete(label_gold)
+	label_gold = C.create_text(  (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30,'bold'))
+
+def display_wumpus():
+	global label_wumpus
+	C.delete(label_wumpus)
+	label_wumpus= C.create_text((size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30,'bold'))
 
 def Game_over():
 	global score
@@ -230,7 +245,7 @@ def Game_over():
 	time.sleep(2)
 	top.destroy()
 
-	global end
+	global end, wumpus,gold
 	unit = 30
 	size = 20
 	end= Tk()
@@ -238,7 +253,7 @@ def Game_over():
 
 	C = Canvas(end,width= size*unit, height=size*(unit-15), background='black')
 
-	if Door.index == Agent.index:
+	if Door.index == Agent.index or (wumpus == 0 and gold ==0) :
 		C.create_text((size-10)*unit, size*unit/2 - 8*unit , fill = 'yellow', text = " CONGRATS ", font=('Arial',50,'bold'))
 		
 	else:
@@ -254,6 +269,9 @@ def Play():
 	global unit, size
 	global lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick
 	global label_score, score
+	global label_wumpus, wumpus
+	global label_gold, gold
+	
 	
 	score = 0
 	top = Tk()
@@ -265,17 +283,30 @@ def Play():
 	top.title("WUMPUS GAME")
 	C = Canvas(top, height = (size)*unit, width = (size+5)*unit, background = '#d5dde0')
 
-	C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
-	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 2.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+	C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4.5*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4.5*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4.5*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4.5*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
+	C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4.5*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+
+	wumpus = len(ListWumpus)
+	gold = len(ListGold)
+
+	img1 = Image.open("../IMAGE/wandg.png")
+	img1 = img1.resize((unit,unit*2), Image.ANTIALIAS)
+	img1 = ImageTk.PhotoImage(img1)
+	C.create_image((size)*unit + 8.5*size, (size+2)*unit/2 - 3.5*unit, image = [img1], anchor = 'nw')
+
+	label_wumpus = C.create_text( (size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30,'bold'))
+	label_gold = C.create_text( (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30,'bold'))
+
+	
 
 	img = Image.open("../IMAGE/control.png")
-	img = img.resize((unit*(size-5),unit*(size-3)), Image.ANTIALIAS)
+	img = img.resize((unit*(size-5),unit*(size-4)), Image.ANTIALIAS)
 	img = ImageTk.PhotoImage(img)
-	C.create_image((size)*unit, (size+2)*unit/2 - 2*unit, image = [img], anchor = 'nw')
+	C.create_image((size)*unit+0.5*size, (size+2)*unit/2 - 1.5*unit, image = [img], anchor = 'nw')
 
 	C.pack()
 
