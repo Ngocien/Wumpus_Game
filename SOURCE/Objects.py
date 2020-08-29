@@ -27,10 +27,12 @@ class Agent(object):
         self.index = x*size + y
         self.pic = None
         self.init_room = self.index
-        self.visited = [(self.index, "-", T)]   #(current, parent)
-        self.predicted = []
+        self.visited = []  
+        self.predicted = [(self.index, "-", True)]
 
     def display(self, C):
+        old_index = self.index
+
         if self.x < 0:
             self.x = 0
         if self.y < 0:
@@ -41,6 +43,7 @@ class Agent(object):
             self.y = size - 1
 
         self.index = self.x*size + self.y
+
         C.delete(self.pic)
         
         self.pic = C.create_image(self.x * unit + 10, self.y * unit + 10, image = self.img, anchor = 'nw')
@@ -78,27 +81,39 @@ class Agent(object):
                 self.status = "Down"
             self.img = ImageTk.PhotoImage(self.down)
 
+        node = (self.index, "-", True)
+        if node not in self.visited:
+            self.visited.append(node)
+
         self.display(C)
 
-    def tile_move(self, tile, C):
-        if tile == self.index + size:  # right
-            self.key_move("Right", C)
+    def tile_move(self, lst, C):
+        #get_current_index
+        current_node = lst[0]
+        self.visited.append(current_node)
+        lst.pop(0)
 
-        elif tile == self.index - size:  # left
-            self.key_move("Left", C)
+        #pop it from predicted
+        for i in range(len(self.predicted)):
+            self.predicted.pop(i)
+            break
 
-        elif tile == self.index - 1:  # up
-            self.key_move("Up", C)
+        #push unvisited node into predicted
+        for i in range(0, len(lst)):
+            if current_node[1] == "-":
+                next_node = (lst[i], "-", True)
 
-        elif tile == self.index + 1:  # down
-            self.key_move("Down", C)
- 
+            self.predicted.append(next_node)
+
+        self.print_KB()
+
+
     def print_KB(self):
         for x in self.visited:
-            print(x)
+            print(" ", x)
             print("^")
         for x in self.predicted:
-            print(x)
+            print(" ", x)
             print("^")
 
 

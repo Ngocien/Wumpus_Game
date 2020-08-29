@@ -9,4 +9,4 @@ from Graphic import *
 def RunAlgorithm():
     print("Run")
 
-Menu("random")
+Menu("maze01")

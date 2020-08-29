@@ -134,27 +134,37 @@ def CollectGold():
 
 def key_pressed(event):
 	global Agent
-	if event.keysym == "Escape":
-		Game_over()
-		del Agent
-		Menu("random")
 
-	elif event.keysym == "space":
-		Shoot()
-	elif event.keysym == "Return": # Enter
-		CollectGold()
-	else:
-		pre_index = Agent.index
-		Agent.key_move(event.keysym, C)
-		if pre_index != Agent.index:
-			OpenRoom()
+	if mode == 'P':
+		if event.keysym == "Escape":
+			Game_over()
+			del Agent
+			Menu("random")
+
+		elif event.keysym == "space":
+			Shoot()
+		elif event.keysym == "Return": # Enter
+			CollectGold()
+		else:
+			pre_index = Agent.index
+			Agent.key_move(event.keysym, C)
+			if pre_index != Agent.index:
+				OpenRoom()
+
+	else: # Run mode
+		if event.keysym == "Return":
+			RunAlgorithm()
 
 def Exit():
 	exit()
 
 def btn_Play():
 	menu.destroy()
-	Play()
+	Play('P')
+
+def btn_Run():
+	menu.destroy()
+	Play('R')
 
 def key_Menu(event):
 	if event.keysym == "Return":
@@ -180,7 +190,7 @@ def Menu(maze):
 	button1.configure(activebackground = "#33B5E5", relief = GROOVE)
 	button1.place(x = 490,y = 150)
 
-	button2 = Button(menu, text = "RUN MODE", width=12,anchor = "center" , command = btn_Play, pady=10)
+	button2 = Button(menu, text = "RUN MODE", width=12,anchor = "center" , command = btn_Run, pady=10)
 	button2['font'] = myfont
 	button2.configure(activebackground = "#33B5E5", relief = GROOVE)
 	button2.place(x = 490,y = 250)
@@ -264,7 +274,7 @@ def Game_over():
 	C.pack()
 	end.mainloop()
 
-def Play():
+def Play(m):
 	global top, C
 	global Agent, Door
 	global unit, size
@@ -272,8 +282,9 @@ def Play():
 	global label_score, score
 	global label_wumpus, wumpus
 	global label_gold, gold
-	
-	
+	global mode
+
+	mode = m
 	score = 0
 	top = Tk()
 	lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = [],[],[],[],[],[],[]
@@ -313,4 +324,14 @@ def Play():
 	Door = door(Agent.x, Agent.y)
 
 	top.bind("<Key>", key_pressed)
+
 	top.mainloop()
+
+def RunAlgorithm():
+	print("Runnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
+	lst = [(9,"-",True), 8, 19]
+	Agent.tile_move(lst,C)
+	exit()
+
+
+
