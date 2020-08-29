@@ -56,6 +56,7 @@ def scan_index(maze,size):
                 temp.append(((i+1)*10+j,maze[i+1][j]))
                 temp.append(((i)*10+j-1,maze[i][j-1]))
                 temp.append((i*10+j+1,maze[i][j+1]))
+            temp.sort()
             list_adj.append(temp)
     return list_adj    
 

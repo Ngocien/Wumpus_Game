@@ -1,6 +1,5 @@
 from PIL import ImageTk, Image, ImageOps
 import time, random
-
 unit = 70
 size = 10
 # Pacman object
@@ -42,6 +41,7 @@ class Agent(object):
             self.y = size - 1
 
         self.index = self.x*size + self.y
+
         C.delete(self.pic)
         
         self.pic = C.create_image(self.x * unit + 10, self.y * unit + 10, image = self.img, anchor = 'nw')
@@ -85,37 +85,86 @@ class Agent(object):
 
         self.display(C)
 
-    def move(self,nextstep,C):
-        self.index = nextstep
-        self.x = self.index // 10
-        self.y = self.index % 10
-        self.display(C)
-        node = (self.index, "-", True)
-        if node not in self.visited:
-            self.visited.append(node)
+    def tile_move(self, tile, C, top):
+        if tile == self.index + size:  # right
+            if self.status != "Right":
+                self.key_move("Right", C)
+                top.update()
+                time.sleep(0.5)
+            self.key_move("Right", C)
 
+        elif tile == self.index - size:  # left
+            if self.status != "Left":
+                self.key_move("Left", C)
+                top.update()
+                time.sleep(0.5)
+            self.key_move("Left", C)
 
-    def tile_move(self, lst, C):
+        elif tile == self.index - 1 :  # up
+            if self.status != "Up":
+                self.key_move("Up", C)
+                top.update()
+                time.sleep(0.5)
+            self.key_move("Up", C)
+
+        elif tile == self.index + 1:  # down
+            if self.status != "Down":
+                self.key_move("Down", C)
+                top.update()
+                time.sleep(0.5)
+            self.key_move("Down", C)
+
+        top.update()
+
+    def action(self, lst, C, top):
         #get_current_index
-        current_node = lst[0]
+        Collect = False
+        if lst[0][1] == "G":
+            Collect = True
+            current_node = (lst[0][0], "-", True)
+        else:
+            current_node = (lst[0][0], lst[0][1], True)
+
         self.visited.append(current_node)
         lst.pop(0)
 
+        # A_star,path[i]
+        self.tile_move(current_node[0], C, top)
+
         #pop it from predicted
         for i in range(len(self.predicted)):
-            self.predicted.pop(i)
-            break
+            if current_node == self.predicted[i]:
+                self.predicted.pop(i)
+                break
 
         #push unvisited node into predicted
         for i in range(0, len(lst)):
             if current_node[1] == "-":
                 next_node = (lst[i], "-", True)
+            elif current_node[1] == "B":
+                next_node = (lst[i], "P", False)
+            elif current_node[1] == "S":
+                next_node = (lst[i], "W", False)
 
-            self.predicted.append(next_node)
+            if next_node not in self.visited:
+                self.predicted.append(next_node)
 
-        self.print_KB()
+        next_tile = self.update_predicted_list()
 
+        return Collect, next_tile
 
+    def update_predicted_list(self):
+
+        self.predicted.sort()
+        print(self.predicted)
+        # self.print_KB()
+        next_tile = -1
+        for n in self.predicted:
+            if n[2]:
+                next_tile = n[0]
+                break
+        print(next_tile)
+        return next_tile
 
     def print_KB(self):
         for x in self.visited:
@@ -289,4 +338,3 @@ class laser(object):
 
     def destroy(self, C):
         C.delete(self.pic)
-

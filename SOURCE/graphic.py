@@ -149,6 +149,8 @@ def key_pressed(event):
 			Agent.key_move(event.keysym, C)
 			if pre_index != Agent.index:
 				OpenRoom()
+				Agent.display(C)
+				top.update()
 
 	else: # Run mode
 		if event.keysym == "Return":
@@ -335,26 +337,29 @@ def Play(m):
 
 	top.mainloop()
 
-
-def manhattan(now, after):
-	return abs(now // 10 - after // 10 ) + abs(now % 10 - after % 10)
-
 def RunAlgorithm():
-	global Agent
-	lst = [8,7,6,5,16,15,14,25,24,23,34,33,32,43,44,45,35,36,26,27,17,18,19,29,28,38,37,47,46]
-	for i in range(len(lst)):
-		
-		index = -2
-		while manhattan(Agent.index, lst[i]) != 1:
-			
-			Agent.move(Agent.visited[index][0], C)
-			index -= 1
-			OpenRoom()
-			top.update()
-			time.sleep(0.5)
-		
-		Agent.move(lst[i],C)
-		OpenRoom()
+	global top
+	print("Runnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
+	init_index = Agent.init_room
+
+	l = [(init_index, lst[init_index//size][init_index%size])]
+	for a in ListAdjacency[init_index]:
+		l.append(a[0]) 
+
+	decision = Agent.action(l,C,top)
+
+	while decision[1] != -1:
+		if decision[0]:	# Gold
+			CollectGold()
+
+		l = [(decision[1], lst[decision[1] // size][decision[1] % size])]
+		for a in ListAdjacency[decision[1]]:
+			l.append(a[0]) 
+
+		decision = Agent.action(l,C,top)
+		# print(Agent.index, l, decision)
+
+		OpenRoom()	# Agent display
 		top.update()
 		time.sleep(0.5)
 
