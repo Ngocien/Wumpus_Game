@@ -1,5 +1,6 @@
 from PIL import ImageTk, Image, ImageOps
 import time, random
+
 unit = 70
 size = 10
 # Pacman object
@@ -31,8 +32,6 @@ class Agent(object):
         self.predicted = [(self.index, "-", True)]
 
     def display(self, C):
-        old_index = self.index
-
         if self.x < 0:
             self.x = 0
         if self.y < 0:
@@ -43,7 +42,6 @@ class Agent(object):
             self.y = size - 1
 
         self.index = self.x*size + self.y
-
         C.delete(self.pic)
         
         self.pic = C.create_image(self.x * unit + 10, self.y * unit + 10, image = self.img, anchor = 'nw')
@@ -87,6 +85,16 @@ class Agent(object):
 
         self.display(C)
 
+    def move(self,nextstep,C):
+        self.index = nextstep
+        self.x = self.index // 10
+        self.y = self.index % 10
+        self.display(C)
+        node = (self.index, "-", True)
+        if node not in self.visited:
+            self.visited.append(node)
+
+
     def tile_move(self, lst, C):
         #get_current_index
         current_node = lst[0]
@@ -106,6 +114,7 @@ class Agent(object):
             self.predicted.append(next_node)
 
         self.print_KB()
+
 
 
     def print_KB(self):
@@ -280,3 +289,4 @@ class laser(object):
 
     def destroy(self, C):
         C.delete(self.pic)
+

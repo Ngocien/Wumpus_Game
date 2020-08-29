@@ -89,7 +89,6 @@ def OpenAll():
 	top.update()	
 
 def Shoot():
-	print("Chíu Chíu")
 	global score, wumpus
 	score -= 100
 	display_score()
@@ -169,7 +168,7 @@ def btn_Run():
 def key_Menu(event):
 	if event.keysym == "Return":
 		menu.destroy()
-		Play()
+		Play('P')
 
 def Menu(maze):
 	global menu
@@ -235,17 +234,17 @@ def draw_maze():
 def display_score():
 	global label_score
 	C.delete(label_score)
-	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "skyblue3", text = str(score), font=('Times New Roman',80,'italic'))
 
 def display_gold():
 	global label_gold
 	C.delete(label_gold)
-	label_gold = C.create_text(  (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30,'bold'))
+	label_gold = C.create_text( (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30))
 
 def display_wumpus():
 	global label_wumpus
 	C.delete(label_wumpus)
-	label_wumpus= C.create_text((size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30,'bold'))
+	label_wumpus = C.create_text( (size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30))
 
 def Game_over():
 	global score
@@ -295,12 +294,20 @@ def Play(m):
 	top.title("WUMPUS GAME")
 	C = Canvas(top, height = (size)*unit, width = (size+5)*unit, background = '#d5dde0')
 
-	C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4.5*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4.5*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4.5*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4.5*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
-	C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4.5*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
-	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "hot pink", text = str(score), font=('Arial',80,'bold'))
+	# C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4.5*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
+	# C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4.5*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
+	# C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4.5*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
+	# C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4.5*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
+	# C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4.5*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
+
+	img2 = Image.open("../IMAGE/score.png")
+	img2 = img2.resize((unit*5,unit), Image.ANTIALIAS)
+	img2 = ImageTk.PhotoImage(img2)
+	C.create_image((size)*unit + 0.5*size, (size)*unit/2 - 5*unit, image = [img2], anchor = 'nw')
+
+
+
+	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "skyblue3", text = str(score), font=('Times New Roman',80,'italic'))
 
 	wumpus = len(ListWumpus)
 	gold = len(ListGold)
@@ -310,14 +317,15 @@ def Play(m):
 	img1 = ImageTk.PhotoImage(img1)
 	C.create_image((size)*unit + 8.5*size, (size+2)*unit/2 - 3.5*unit, image = [img1], anchor = 'nw')
 
-	label_wumpus = C.create_text( (size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30,'bold'))
-	label_gold = C.create_text( (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30,'bold'))
+	label_wumpus = C.create_text( (size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30))
+	label_gold = C.create_text( (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30))
 
 	img = Image.open("../IMAGE/control.png")
 	img = img.resize((unit*(size-5),unit*(size-5)), Image.ANTIALIAS)
 	img = ImageTk.PhotoImage(img)
-	C.create_image(size*unit+0.5*size, (size+2)*unit/2 - 2*size , image = [img], anchor = 'nw')
+	C.create_image(size*unit+0.5*size, (size+2)*unit/2 - 9*size , image = [img], anchor = 'nw')
 
+	C.create_text((size*unit +2.5*unit, (size+2)*unit/2 + 3.5*unit), fill = 'burlywood4', text = '18127155_Vũ Công Minh - 18127046_Lư Ngọc Liên', font = ('Purisa',10))
 	C.pack()
 
 	draw_maze()
@@ -327,11 +335,31 @@ def Play(m):
 
 	top.mainloop()
 
+
+def manhattan(now, after):
+	return abs(now // 10 - after // 10 ) + abs(now % 10 - after % 10)
+
 def RunAlgorithm():
-	print("Runnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
-	lst = [(9,"-",True), 8, 19]
-	Agent.tile_move(lst,C)
+	global Agent
+	lst = [8,7,6,5,16,15,14,25,24,23,34,33,32,43,44,45,35,36,26,27,17,18,19,29,28,38,37,47,46]
+	for i in range(len(lst)):
+		
+		index = -2
+		while manhattan(Agent.index, lst[i]) != 1:
+			
+			Agent.move(Agent.visited[index][0], C)
+			index -= 1
+			OpenRoom()
+			top.update()
+			time.sleep(0.5)
+		
+		Agent.move(lst[i],C)
+		OpenRoom()
+		top.update()
+		time.sleep(0.5)
+
 	exit()
+
 
 
 
