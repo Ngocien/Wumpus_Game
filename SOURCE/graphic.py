@@ -75,7 +75,8 @@ def OpenAll():
 	for w in ListWumpus:
 		w.display(C)
 		for s in w.ListStench:
-			s.display(C)
+			if s.index < size*size: 
+				s.display(C)
 	for p in ListPit:
 		p.display(C)
 	for b in ListBreeze:
@@ -301,12 +302,10 @@ def Play():
 	label_wumpus = C.create_text( (size)*unit + 4*unit, size*unit/2 - 2*unit, fill = "skyblue4", text = str(wumpus), font=('Arial',30,'bold'))
 	label_gold = C.create_text( (size)*unit + 4*unit, size*unit/2 - 1*unit, fill = "gold2", text = str(gold), font=('Arial',30,'bold'))
 
-	
-
 	img = Image.open("../IMAGE/control.png")
-	img = img.resize((unit*(size-5),unit*(size-4)), Image.ANTIALIAS)
+	img = img.resize((unit*(size-5),unit*(size-5)), Image.ANTIALIAS)
 	img = ImageTk.PhotoImage(img)
-	C.create_image((size)*unit+0.5*size, (size+2)*unit/2 - 1.5*unit, image = [img], anchor = 'nw')
+	C.create_image(size*unit+0.5*size, (size+2)*unit/2 - 2*size , image = [img], anchor = 'nw')
 
 	C.pack()
 
@@ -315,8 +314,3 @@ def Play():
 
 	top.bind("<Key>", key_pressed)
 	top.mainloop()
-
-
-
-# def Move():
-

@@ -27,7 +27,8 @@ class Agent(object):
         self.index = x*size + y
         self.pic = None
         self.init_room = self.index
-        self.visited = [(self.index, -1)]   #(current, parent)
+        self.visited = [(self.index, "-", T)]   #(current, parent)
+        self.predicted = []
 
     def display(self, C):
         if self.x < 0:
@@ -40,7 +41,6 @@ class Agent(object):
             self.y = size - 1
 
         self.index = self.x*size + self.y
-        print(self.index)
         C.delete(self.pic)
         
         self.pic = C.create_image(self.x * unit + 10, self.y * unit + 10, image = self.img, anchor = 'nw')
@@ -92,7 +92,16 @@ class Agent(object):
 
         elif tile == self.index + 1:  # down
             self.key_move("Down", C)
-    
+ 
+    def print_KB(self):
+        for x in self.visited:
+            print(x)
+            print("^")
+        for x in self.predicted:
+            print(x)
+            print("^")
+
+
 #Wumpus class
 class Wumpus (object):
     def __init__(self, imgpath, x, y):
