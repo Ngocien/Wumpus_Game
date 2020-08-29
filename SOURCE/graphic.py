@@ -245,7 +245,7 @@ def Game_over():
 	time.sleep(2)
 	top.destroy()
 
-	global end, wumpus,gold
+	global end, gold
 	unit = 30
 	size = 20
 	end= Tk()
@@ -253,7 +253,7 @@ def Game_over():
 
 	C = Canvas(end,width= size*unit, height=size*(unit-15), background='black')
 
-	if Door.index == Agent.index or (wumpus == 0 and gold ==0) :
+	if Door.index == Agent.index  or gold == 0:
 		C.create_text((size-10)*unit, size*unit/2 - 8*unit , fill = 'yellow', text = " CONGRATS ", font=('Arial',50,'bold'))
 		
 	else:
