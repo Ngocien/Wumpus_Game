@@ -119,10 +119,8 @@ class Agent(object):
         # time.sleep(0.5)
 
     def action(self, lst, C, top):
-        print("===================")
-        self.print_KB()
-
-
+        # print("===================")
+        # self.print_KB()
 
         #get_current_index
         Collect = False
@@ -152,8 +150,10 @@ class Agent(object):
         #push unvisited node into predicted
         for i in range(0, len(lst)):
             next_node = (lst[i], "-", True)
-            
-            if "B" in current_node[1]:
+
+            if "B" in current_node[1] and "S" in current_node[1]:
+                next_node = (lst[i], "PW", False)
+            elif "B" in current_node[1]:
                 next_node = (lst[i], "P", False)
             elif "S" in current_node[1]:
                 next_node = (lst[i], "W", False)
@@ -224,8 +224,6 @@ class Agent(object):
                     temp.append(i+1)    
             lst_adj.append(temp)
 
-        # print(lst)
-        # print(lst_adj)
         return lst_adj
 
     def print_KB(self):
