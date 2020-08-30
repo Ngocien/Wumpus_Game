@@ -6,7 +6,5 @@ from Data import *
 from Objects import *
 from Graphic import *
 
-def RunAlgorithm():
-    print("Run")
 
-Menu("maze05")
+Menu("maze01")

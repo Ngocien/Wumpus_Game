@@ -5,7 +5,7 @@ unit = 70
 size = 10
 # Agent object
 class Agent(object):
-    def __init__(self, imgpath_down, imgpath_up, imgpath_right, x, y):
+    def __init__(self, imgpath_down, imgpath_up, imgpath_right, x, y,mode):
         temp = Image.open(imgpath_down) 
         img_down = temp.resize((50, 50), Image.ANTIALIAS)
         self.down = img_down
@@ -23,6 +23,7 @@ class Agent(object):
         self.img = ImageTk.PhotoImage(img_right)
         self.status = "Right"
 
+        self.mode = mode
         self.x = x
         self.y = y
         self.index = x*size + y
@@ -124,6 +125,8 @@ class Agent(object):
 
         #get_current_index
         Collect = False
+        Shoot = False
+        goal = None
         if "G" in lst[0][1]:
             Collect = True
             lst[0][1].replace("G","")
@@ -132,12 +135,24 @@ class Agent(object):
         else:
             current_node = (lst[0][0], "-", True)
 
+        if "W" in lst[0][1]:  # visit after kill wumpus
+            current_node = (lst[0][0], "-", True)
+
+        # if "S" in lst[0][1]:
+
+
         self.visited.append(current_node)
         lst.pop(0)
 
         lst_adj = self.create_lst_adj(current_node[0])
         path = A_star(self.index, current_node[0], lst_adj)[0]
-        # print (path)
+
+        if self.mode == 'A' and self.Smell(current_node[0]):    # shoot here
+            goal = path.pop(-1)
+            Shoot = True
+            self.update_visited(path[-1])
+            self.update_predicted(path[-1])
+
         for i in path:
             self.tile_move(i, C, top)
 
@@ -150,14 +165,12 @@ class Agent(object):
         #push unvisited node into predicted
         for i in range(0, len(lst)):
             next_node = (lst[i], "-", True)
-
             if "B" in current_node[1] and "S" in current_node[1]:
                 next_node = (lst[i], "PW", False)
             elif "B" in current_node[1]:
                 next_node = (lst[i], "P", False)
             elif "S" in current_node[1]:
                 next_node = (lst[i], "W", False)
-
             visited = False
             for n in self.visited:  # check if visited
                 if next_node[0] == n[0]:
@@ -171,15 +184,82 @@ class Agent(object):
                         break
                 self.predicted.append(next_node)
 
-        # print("visited", self.visited)
-        # print(self.predicted)
+        print("visited", self.visited)
+        print("predict", self.predicted)
 
         #choose next tile
-        next_tile = self.choose_next_tile()
-        # print(next_tile)
-        return Collect, next_tile
+        if self.mode == 'S':
+            next_tile = self.choose_next_tile_shy()
+        elif self.mode == 'A':
+            next_tile = self.choose_next_tile_aggressive(current_node[0])
+            # print("next_tile", next_tile)
 
-    def choose_next_tile(self):
+        return Collect , Shoot, next_tile, goal
+
+    def Smell(self, goal):
+        for i in range(len(self.predicted)):
+            
+            if self.predicted[i][0] == goal and 'W' in self.predicted[i][1]:
+                return True
+        return False
+
+    def update_visited(self, next_node):
+        for i in range(len(self.visited)):
+            if self.visited[i][0] == next_node:
+                lst_temp = list(self.visited[i])
+                lst_temp[1] = self.visited[i][1].replace("S","")
+
+                if not len(lst_temp[1]):
+                    lst_temp[1] = "-"
+                
+                self.visited.pop(i)
+                self.visited.append(tuple(lst_temp))
+    
+    def update_predicted(self, next_node):
+        for i in range(len(self.predicted)):
+            if self.predicted[i][0] == next_node + 1:
+                lst_temp = list(self.predicted[i])
+                lst_temp[1] = self.predicted[i][1].replace("W","")
+
+                if not len(lst_temp[1]):
+                    lst_temp[1] = "-"
+                
+                self.predicted.pop(i)
+                self.predicted.append(tuple(lst_temp))
+                i -= 1
+            if self.predicted[i][0] == next_node - 1:
+                lst_temp = list(self.predicted[i])
+                lst_temp[1] = self.predicted[i][1].replace("W","")
+
+                if not len(lst_temp[1]):
+                    lst_temp[1] = "-"
+                
+                self.predicted.pop(i)
+                self.predicted.append(tuple(lst_temp))
+                
+                i -= 1
+            if self.predicted[i][0] == next_node + size:
+                lst_temp = list(self.predicted[i])
+                lst_temp[1] = self.predicted[i][1].replace("W","")
+
+                if not len(lst_temp[1]):
+                    lst_temp[1] = "-"
+                
+                self.predicted.pop(i)
+                self.predicted.append(tuple(lst_temp))
+                i -= 1
+            if self.predicted[i][0] == next_node - size:
+                lst_temp = list(self.predicted[i])
+                lst_temp[1] = self.predicted[i][1].replace("W","")
+
+                if not len(lst_temp[1]):
+                    lst_temp[1] = "-"
+                
+                self.predicted.pop(i)
+                self.predicted.append(tuple(lst_temp))
+                i -= 1
+
+    def choose_next_tile_shy(self):
         ListPath = []
 
         for n in self.predicted:
@@ -203,6 +283,31 @@ class Agent(object):
             return -1
         return self.predicted[min_index][0]
 
+    def choose_next_tile_aggressive(self, goal):
+        ListPath = []
+
+        for n in self.predicted:
+            if n[0] != self.index and "P" != n[1]:
+                lst_adj = self.create_lst_adj(n[0])
+                ListPath.append(A_star(goal, n[0], lst_adj)[0])
+            else:
+                ListPath.append(-1)
+
+        min_index = -1
+        for i in range(len(ListPath)):
+            if ListPath[i] != -1:
+                min_index = i
+                break 
+
+        for i in range(min_index, len(ListPath)):
+            if ListPath[i] != -1 and len(ListPath[i]) < len(ListPath[min_index]):
+                min_index = i
+
+        if min_index == -1:
+            return -1
+            
+        return self.predicted[min_index][0]
+    
     def create_lst_adj(self, goal):
         
         lst = []

@@ -60,7 +60,7 @@ def scan_index(maze,size):
             list_adj.append(temp)
     return list_adj    
 
-def scan_maze(maze, size):
+def scan_maze(maze, size, mode):
     wumpus, pit, breeze, gold, brick = [], [] ,[] ,[] ,[]
     agent = None
     for i in range(size):
@@ -81,7 +81,7 @@ def scan_maze(maze, size):
                     g = Gold("../IMAGE/gold.png", j ,i)
                     gold.append(g)
                 if t == 'A':
-                    agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png", j ,i)
+                    agent = Agent("../IMAGE/Agent_D.png","../IMAGE/Agent_U.png","../IMAGE/Agent_R.png", j ,i, mode)
 
     return agent, wumpus, pit, breeze, gold, brick
 

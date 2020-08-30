@@ -18,7 +18,7 @@ def handle_input():
 		lst, size = get_maze(UserInput)
 
 	ListAdjacency = scan_index(lst,size)
-	Agent, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = scan_maze(lst, size)
+	Agent, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = scan_maze(lst, size,agent_mode)
 
 def OpenRoom():
 	global score, label_score
@@ -134,7 +134,7 @@ def CollectGold():
 def key_pressed(event):
 	global Agent
 
-	if mode == 'P':
+	if game_mode == 'P':
 		if event.keysym == "Escape":
 			Game_over()
 			del Agent
@@ -156,16 +156,21 @@ def key_pressed(event):
 		if event.keysym == "Return":
 			RunAlgorithm()
 
-def Exit():
-	exit()
-
 def btn_Play():
 	menu.destroy()
-	Play('P')
+	Play('P',agent_mode)
 
 def btn_Run():
 	menu.destroy()
-	Play('R')
+	Play('R', agent_mode)
+
+def btn_Shy():
+	global agent_mode
+	agent_mode = 'S'
+
+def btn_Angry():
+	global agent_mode
+	agent_mode = 'A'
 
 def key_Menu(event):
 	if event.keysym == "Return":
@@ -175,6 +180,9 @@ def key_Menu(event):
 def Menu(maze):
 	global menu
 	global input_map
+	global agent_mode
+
+	agent_mode ='S'
 	input_map = maze
 	unit = 50
 	menu = Tk()
@@ -196,10 +204,20 @@ def Menu(maze):
 	button2.configure(activebackground = "#33B5E5", relief = GROOVE)
 	button2.place(x = 490,y = 250)
 
-	button3 = Button(menu, text = "EXIT",width=12,anchor = "center"  , command = Exit, pady=10)
-	button3['font'] = myfont
-	button3.configure(activebackground = "#33B5E5", relief = GROOVE)
+	img3 = Image.open("../IMAGE/shy.png")
+	img3 = img3.resize((unit*2,unit*2), Image.ANTIALIAS)
+	img3 = ImageTk.PhotoImage(img3)
+
+	button3 = Button(menu,image = img3, command= btn_Shy )
 	button3.place(x = 490,y = 350)
+
+	img4 = Image.open("../IMAGE/angry.png")
+	img4 = img4.resize((unit*2,unit*2), Image.ANTIALIAS)
+	img4 = ImageTk.PhotoImage(img4)
+
+	button4 = Button(menu,image = img4, command= btn_Angry )
+	button4.place(x = 490 + unit*2,y = 350)
+
 
 	img1 = Image.open("../IMAGE/copyright.png")
 	img1 = img1.resize((unit,unit), Image.ANTIALIAS)
@@ -275,7 +293,7 @@ def Game_over():
 	C.pack()
 	end.mainloop()
 
-def Play(m):
+def Play(m,a_mode):
 	global top, C
 	global Agent, Door
 	global unit, size
@@ -283,9 +301,10 @@ def Play(m):
 	global label_score, score
 	global label_wumpus, wumpus
 	global label_gold, gold
-	global mode
+	global game_mode, agent_mode
 
-	mode = m
+	game_mode = m
+	agent_mode = a_mode
 	score = 0
 	top = Tk()
 	lst, ListAdjacency, ListWumpus, ListPit, ListBreeze, ListGold, ListBrick = [],[],[],[],[],[],[]
@@ -296,18 +315,10 @@ def Play(m):
 	top.title("WUMPUS GAME")
 	C = Canvas(top, height = (size)*unit, width = (size+5)*unit, background = '#d5dde0')
 
-	# C.create_text((size)*unit + 0.5*unit, size*unit/2 - 4.5*unit, fill = 'Red', text = " S", font=('Arial',35,'bold'))
-	# C.create_text((size)*unit + 1.5*unit, size*unit/2 - 4.5*unit, fill = 'dark orange', text = "C", font=('Arial',35,'bold'))
-	# C.create_text((size)*unit + 2.5*unit, size*unit/2 - 4.5*unit, fill = 'brown', text = "O", font=('Arial',35,'bold'))
-	# C.create_text((size)*unit + 3.5*unit, size*unit/2 - 4.5*unit, fill = 'dark blue', text = "R", font=('Arial',35,'bold'))
-	# C.create_text((size)*unit + 4.5*unit, size*unit/2 - 4.5*unit, fill = 'black', text = "E", font=('Arial',35,'bold'))
-
 	img2 = Image.open("../IMAGE/score.png")
 	img2 = img2.resize((unit*5,unit), Image.ANTIALIAS)
 	img2 = ImageTk.PhotoImage(img2)
 	C.create_image((size)*unit + 0.5*size, (size)*unit/2 - 5*unit, image = [img2], anchor = 'nw')
-
-
 
 	label_score = C.create_text( (size)*unit + 2.5*unit, size*unit/2 - 3.5*unit, fill = "skyblue3", text = str(score), font=('Times New Roman',80,'italic'))
 
@@ -340,6 +351,7 @@ def Play(m):
 def RunAlgorithm():
 	global top
 	global Agent
+	global lst
 
 	init_index = Agent.init_room
 
@@ -348,21 +360,41 @@ def RunAlgorithm():
 		l.append(a[0]) 
 
 	decision = Agent.action(l,C,top)
-
-	while decision[1] != -1:
+	while decision[2] != -1:
+		
 		if decision[0]:	# Gold
 			CollectGold()
+		if decision[1]:
+			Shoot()
+			Agent.tile_move(decision[3],C,top)
+			OpenRoom()	
+			CollectGold()
 
-		l = [(decision[1], lst[decision[1] % size][decision[1] // size])]
-		for a in ListAdjacency[decision[1]]:
-			l.append(a[0]) 
+		a = ""
+		
+		for w in ListWumpus:
+			for s in w.ListStench:
+				if decision[2] == s.index :
+					a += "S"
+		
+		for b in ListBreeze:
+			if decision[2] == b.index:
+				a += "B"
+
+		for g in ListGold:
+			if decision[2] == g.index:
+				a += "G"
+		if a == "":
+			a = "-"
+		l = [(decision[2], a)]
+		for adj in ListAdjacency[decision[2]]:
+			l.append(adj[0]) 
 
 		decision = Agent.action(l,C,top)
 		# print(Agent.index, l, decision)
 		OpenRoom()	# Agent display
 		top.update()
 		time.sleep(0.2)
-
 
 	Agent.ClimbOut(C,top)
 	top.update()

@@ -4,8 +4,6 @@ def TwoToOne(a,b):
     # print("TwoToOne", a, b)
     if len(b[1]) < len(a[1]):
         a,b = b,a 
-    print(a,b)
-
     if (not a[2]) and (not b[2]) and (a[1] in b[1]):
         return a
     else:
