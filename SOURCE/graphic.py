@@ -26,9 +26,10 @@ def OpenRoom():
 	
 	index = Agent.index
 	
-	for br in ListBrick:
-		if br.index == index:
-			br.destroy(C)
+	for i in range(len(ListBrick)):
+		if ListBrick[i].index == index:
+			ListBrick[i].destroy(C)
+			ListBrick.pop(i)
 			break
 	for b in ListBreeze:
 		if b.index == index:
@@ -63,6 +64,8 @@ def OpenRoom():
 			break
 
 	if dead:
+		score -= 100
+		display_score()
 		top.update()
 		time.sleep(1)
 		Game_over()
@@ -175,7 +178,7 @@ def btn_Angry():
 def key_Menu(event):
 	if event.keysym == "Return":
 		menu.destroy()
-		Play('P')
+		Play('R', 'S')
 
 def Menu(maze):
 	global menu
@@ -348,6 +351,24 @@ def Play(m,a_mode):
 
 	top.mainloop()
 
+def generate_data():
+	temp = ""
+	for w in ListWumpus:
+		for s in w.ListStench:
+			if Agent.index == s.index :
+				temp += "S"
+
+	for b in ListBreeze:
+		if Agent.index == b.index:
+			temp += "B"
+
+	for g in ListGold:
+		if Agent.index == g.index:
+			temp += "G"
+	if temp == "":
+		temp = "-"
+	return temp
+
 def RunAlgorithm():
 	global top
 	global Agent
@@ -360,45 +381,43 @@ def RunAlgorithm():
 		l.append(a[0]) 
 
 	decision = Agent.action(l,C,top)
-	while decision[2] != -1:
-		
-		if decision[0]:	# Gold
-			CollectGold()
-		if decision[1]:
-			Shoot()
-			Agent.tile_move(decision[3],C,top)
+
+	while decision[2] != None:	# path
+		goal = decision[2].pop(-1)
+		decision[2].pop(0) # current_index
+		for i in decision[2]:
+			Agent.tile_move(i, C, top)
 			OpenRoom()	
-			CollectGold()
+			top.update()
+			time.sleep(0.2)
 
-		a = ""
-		
-		for w in ListWumpus:
-			for s in w.ListStench:
-				if decision[2] == s.index :
-					a += "S"
-		
-		for b in ListBreeze:
-			if decision[2] == b.index:
-				a += "B"
+		if decision[1]: # Shoot
+			Agent.facing_to(goal,C,top)
+			Shoot()
+			Agent.update_visited((Agent.index, generate_data(), True))
 
-		for g in ListGold:
-			if decision[2] == g.index:
-				a += "G"
-		if a == "":
-			a = "-"
-		l = [(decision[2], a)]
-		for adj in ListAdjacency[decision[2]]:
-			l.append(adj[0]) 
-
-		decision = Agent.action(l,C,top)
-		# print(Agent.index, l, decision)
-		OpenRoom()	# Agent display
+		# go last tile
+		Agent.tile_move(goal, C, top)
+		OpenRoom()	
 		top.update()
 		time.sleep(0.2)
 
-	Agent.ClimbOut(C,top)
-	top.update()
+		l = [(Agent.index, generate_data())]
+		for adj in ListAdjacency[Agent.index]:
+			l.append(adj[0]) 
+
+		decision = Agent.action(l, C, top)	
+
+		if decision[0]:		# Tukkk
+			CollectGold()
+
+	path = Agent.ClimbOut(C)
+	for i in path:
+		Agent.tile_move(i,C,top)
+		top.update()
+		time.sleep(0.2)
+
 	time.sleep(2)
 	Game_over()
 	del Agent
-	Menu("random")
+	Menu("maze01")

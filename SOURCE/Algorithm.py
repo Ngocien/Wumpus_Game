@@ -1,13 +1,13 @@
 import numpy as np
 
 def TwoToOne(a,b):
-    # print("TwoToOne", a, b)
-    if len(b[1]) < len(a[1]):
-        a,b = b,a 
-    if (not a[2]) and (not b[2]) and (a[1] in b[1]):
-        return a
-    else:
-        return (a[0],'-',True)
+    if (not a[2]) and (not b[2]) and (a[1] in b[1] or b[1] in a[1]):
+        if len(a[1]) < len(b[1]):
+            return a
+        else:
+            return b
+    
+    return (a[0],'-',True)
 
 def manhattan(now, after):
 	return abs(now // 10 - after // 10 ) + abs(now % 10 - after % 10)
