@@ -339,10 +339,11 @@ def Play(m):
 
 def RunAlgorithm():
 	global top
-	print("Runnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn")
+	global Agent
+
 	init_index = Agent.init_room
 
-	l = [(init_index, lst[init_index//size][init_index%size])]
+	l = [(init_index, lst[init_index%size][init_index//size])]
 	for a in ListAdjacency[init_index]:
 		l.append(a[0]) 
 
@@ -352,19 +353,20 @@ def RunAlgorithm():
 		if decision[0]:	# Gold
 			CollectGold()
 
-		l = [(decision[1], lst[decision[1] // size][decision[1] % size])]
+		l = [(decision[1], lst[decision[1] % size][decision[1] // size])]
 		for a in ListAdjacency[decision[1]]:
 			l.append(a[0]) 
 
 		decision = Agent.action(l,C,top)
 		# print(Agent.index, l, decision)
-
 		OpenRoom()	# Agent display
 		top.update()
-		time.sleep(0.5)
-
-	exit()
+		time.sleep(0.2)
 
 
-
-
+	Agent.ClimbOut(C,top)
+	top.update()
+	time.sleep(2)
+	Game_over()
+	del Agent
+	Menu("random")

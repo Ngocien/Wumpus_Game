@@ -1,8 +1,9 @@
 from PIL import ImageTk, Image, ImageOps
 import time, random
+from Algorithm import *
 unit = 70
 size = 10
-# Pacman object
+# Agent object
 class Agent(object):
     def __init__(self, imgpath_down, imgpath_up, imgpath_right, x, y):
         temp = Image.open(imgpath_down) 
@@ -79,9 +80,9 @@ class Agent(object):
                 self.status = "Down"
             self.img = ImageTk.PhotoImage(self.down)
 
-        node = (self.index, "-", True)
-        if node not in self.visited:
-            self.visited.append(node)
+        # node = (self.index, "-", True)
+        # if node not in self.visited:
+        #     self.visited.append(node)
 
         self.display(C)
 
@@ -90,81 +91,142 @@ class Agent(object):
             if self.status != "Right":
                 self.key_move("Right", C)
                 top.update()
-                time.sleep(0.5)
+                time.sleep(0.2)
             self.key_move("Right", C)
 
         elif tile == self.index - size:  # left
             if self.status != "Left":
                 self.key_move("Left", C)
                 top.update()
-                time.sleep(0.5)
+                time.sleep(0.2)
             self.key_move("Left", C)
 
         elif tile == self.index - 1 :  # up
             if self.status != "Up":
                 self.key_move("Up", C)
                 top.update()
-                time.sleep(0.5)
+                time.sleep(0.2)
             self.key_move("Up", C)
 
         elif tile == self.index + 1:  # down
             if self.status != "Down":
                 self.key_move("Down", C)
                 top.update()
-                time.sleep(0.5)
+                time.sleep(0.2)
             self.key_move("Down", C)
 
         top.update()
+        # time.sleep(0.5)
 
     def action(self, lst, C, top):
+        print("===================")
+        self.print_KB()
+
+
+
         #get_current_index
         Collect = False
-        if lst[0][1] == "G":
+        if "G" in lst[0][1]:
             Collect = True
-            current_node = (lst[0][0], "-", True)
-        else:
+            lst[0][1].replace("G","")
+        if len(lst[0][1]):  #exists
             current_node = (lst[0][0], lst[0][1], True)
+        else:
+            current_node = (lst[0][0], "-", True)
 
         self.visited.append(current_node)
         lst.pop(0)
 
-        # A_star,path[i]
-        self.tile_move(current_node[0], C, top)
+        lst_adj = self.create_lst_adj(current_node[0])
+        path = A_star(self.index, current_node[0], lst_adj)[0]
+        # print (path)
+        for i in path:
+            self.tile_move(i, C, top)
 
         #pop it from predicted
         for i in range(len(self.predicted)):
-            if current_node == self.predicted[i]:
+            if current_node[0] == self.predicted[i][0]:
                 self.predicted.pop(i)
                 break
 
         #push unvisited node into predicted
         for i in range(0, len(lst)):
-            if current_node[1] == "-":
-                next_node = (lst[i], "-", True)
-            elif current_node[1] == "B":
+            next_node = (lst[i], "-", True)
+            
+            if "B" in current_node[1]:
                 next_node = (lst[i], "P", False)
-            elif current_node[1] == "S":
+            elif "S" in current_node[1]:
                 next_node = (lst[i], "W", False)
 
-            if next_node not in self.visited:
+            visited = False
+            for n in self.visited:  # check if visited
+                if next_node[0] == n[0]:
+                    visited = True
+
+            if not visited:
+                for i in range(len(self.predicted)): # check if predicted
+                    if next_node[0] == self.predicted[i][0]:
+                        a = self.predicted.pop(i)
+                        next_node = TwoToOne(a, next_node)
+                        break
                 self.predicted.append(next_node)
 
-        next_tile = self.update_predicted_list()
+        # print("visited", self.visited)
+        # print(self.predicted)
 
+        #choose next tile
+        next_tile = self.choose_next_tile()
+        # print(next_tile)
         return Collect, next_tile
 
-    def update_predicted_list(self):
+    def choose_next_tile(self):
+        ListPath = []
 
-        self.predicted.sort()
-        print(self.predicted)
-        # self.print_KB()
-        next_tile = -1
         for n in self.predicted:
-            if n[2]:
-                next_tile = n[0]
-                break
-        print(next_tile)
-        return next_tile
+            if n[2] and n[0] != self.index:
+                lst_adj = self.create_lst_adj(n[0])
+                ListPath.append(A_star(self.index, n[0], lst_adj)[0])
+            else:
+                ListPath.append(-1)
+
+        min_index = -1
+        for i in range(len(ListPath)):
+            if ListPath[i] != -1:
+                min_index = i
+                break 
+
+        for i in range(min_index, len(ListPath)):
+            if ListPath[i] != -1 and len(ListPath[i]) < len(ListPath[min_index]):
+                min_index = i
+
+        if min_index == -1:
+            return -1
+        return self.predicted[min_index][0]
+
+    def create_lst_adj(self, goal):
+        
+        lst = []
+        for v in self.visited:
+            lst.append(v[0])
+
+        lst.append(goal)
+        lst_adj = []
+        for i in range(size*size):
+            temp = []
+            if i in lst:
+                if (i-size) in lst:     # left
+                    temp.append(i-size)
+                if (i+size) in lst:     # right
+                    temp.append(i+size)
+                if (i-1) in lst:        # Up
+                    temp.append(i-1)
+                if (i+1) in lst:        # Down
+                    temp.append(i+1)    
+            lst_adj.append(temp)
+
+        # print(lst)
+        # print(lst_adj)
+        return lst_adj
 
     def print_KB(self):
         for x in self.visited:
@@ -174,6 +236,11 @@ class Agent(object):
             print(" ", x)
             print("^")
 
+    def ClimbOut(self, C, top):
+        lst_adj = self.create_lst_adj(self.init_room)
+        path = A_star(self.index, self.init_room, lst_adj)[0]
+        for i in path:
+            self.tile_move(i, C, top)
 
 #Wumpus class
 class Wumpus (object):
