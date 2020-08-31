@@ -181,7 +181,14 @@ class Agent(object):
         if self.mode == 'S':
             next_tile = self.choose_next_tile_shy()
         elif self.mode == 'A':
-            next_tile, Shoot = self.choose_next_tile_aggressive(current_node[0])
+
+            current_obj = "-"
+            for v in self.visited:
+                if v[0] == self.index:
+                    current_obj = v[1]
+                    break
+
+            next_tile, Shoot = self.choose_next_tile_aggressive(current_node[0], current_obj)
 
         # print(next_tile)
         if next_tile != -1:
@@ -190,12 +197,43 @@ class Agent(object):
 
         return Collect, Shoot, path
 
+    def Request_Update_Visited(self, goal):
+        temp = []
+        x,y = goal//size, goal%size
+
+        for v in self.visited:
+            if x-1 >= 0 and (x-1)*size + y == v[0]:         # left
+                temp.append((x-1)*size + y)
+            elif x+1 < size and (x+1)*size + y == v[0]:     # right
+                temp.append((x+1)*size + y)
+            elif y-1 >= 0 and x*size + y -1 == v[0]:        # Up
+                temp.append(x*size + y -1)
+            elif y+1 < size and x*size + y +1 == v[0]:      # Down
+                temp.append(x*size + y +1)    
+
+        return temp
+
     def update_visited(self, tpl):
         for i in range(len(self.visited)):
             if self.visited[i][0] == tpl[0]:
                 self.visited.pop(i)
                 self.visited.append(tpl)
                 break
+
+    def update_predicted(self, r, pre):
+        for v in self.visited:
+            if v[0] == r and "S" not in v[1]:
+                for p in pre:
+                    for i in range(len(self.predicted)):
+                        if self.predicted[i][0] == p:
+                            adj = self.predicted[i][1].replace("W","")
+                            if adj == "P":
+                                new_node = (p,adj,False)
+                            else:
+                                new_node = (p, "-", True)
+                            self.predicted.pop(i)
+                            self.predicted.append(new_node)
+                            break
 
     def choose_next_tile_shy(self):
         ListPath = []
@@ -221,22 +259,31 @@ class Agent(object):
             return -1
         return self.predicted[min_index][0]
 
-    def choose_next_tile_aggressive(self, goal):
+    def choose_next_tile_aggressive(self, goal, current_obj):
         ListPath = []
 
         for n in self.predicted:
-            if n[0] != self.index and "P" != n[1]:         # len!=0 and != Pit and 2nd wumpus
+            if n[0] != self.index and "P" != n[1]:         # len != 0 and != Pit and 2nd wumpus
                 # print(n)
-                # if "W" in n[1] and (n[0],self.index) not in self.wumpus_predited:
-                #     self.wumpus_predited.append((n[0],self.index))
-                #     print(self.wumpus_predited)
-                # else:
-                #     lst_adj = self.create_lst_adj(n[0])
-                #     ListPath.append(A_star(goal, n[0], lst_adj)[0])
-                lst_adj = self.create_lst_adj(n[0])
-                ListPath.append(A_star(goal, n[0], lst_adj)[0])
+                if "W" in n[1] and "S" in current_obj and n[0] not in self.wumpus_predited:
+                    self.wumpus_predited.append(n[0])
+                    # print(self.wumpus_predited, self.index)
+                else:
+                    # pop wumpus out 
+                    if "W" in n[1] and "S" in current_obj:
+                        for i in range(len(self.wumpus_predited)):
+                            if self.wumpus_predited[i] == n[0]:
+                                self.wumpus_predited.pop(i)
+                                break
+
+                    lst_adj = self.create_lst_adj(n[0])
+                    ListPath.append(A_star(goal, n[0], lst_adj)[0])
+
+                # lst_adj = self.create_lst_adj(n[0])
+                # ListPath.append(A_star(goal, n[0], lst_adj)[0]) 
             else:
                 ListPath.append(-1)
+
 
         min_index = -1
         for i in range(len(ListPath)):
@@ -250,8 +297,13 @@ class Agent(object):
 
         if min_index == -1:
             return -1, False
-        
-        return self.predicted[min_index][0], not self.predicted[min_index][2]
+
+        for i in range(len(self.predicted)):
+            if ListPath[min_index][-1] == self.predicted[i][0]:
+                node_index = i
+                break
+
+        return self.predicted[node_index][0], not self.predicted[node_index][2]
     
     def create_lst_adj(self, goal):
         lst = []
@@ -273,6 +325,7 @@ class Agent(object):
                     temp.append(x*size + y -1)
                 if y+1 < size and x*size + y +1 in lst:      # Down
                     temp.append(x*size + y +1)    
+
             lst_adj.append(temp)
 
         return lst_adj
@@ -289,7 +342,6 @@ class Agent(object):
         lst_adj = self.create_lst_adj(self.init_room)
         return A_star(self.index, self.init_room, lst_adj)[0]
         
-
 #Wumpus class
 class Wumpus (object):
     def __init__(self, imgpath, x, y):

@@ -1,3 +1,3 @@
 from Graphic import *
 
-Menu("maze01")
+Menu("maze05")

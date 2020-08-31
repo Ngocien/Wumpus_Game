@@ -197,12 +197,12 @@ def Menu(maze):
 	img = ImageTk.PhotoImage(img)
 	C.create_image(0, 0, image = [img], anchor = 'nw')
 	myfont = font.Font(size=20)
-	button1 = Button(menu, text = "PLAY MODE",width=12,anchor = "center" , command = btn_Play, pady=10)
+	button1 = Button(menu, text = "PLAY MODE",width=13,anchor = "center" , command = btn_Play, pady=10)
 	button1['font'] = myfont
 	button1.configure(activebackground = "#33B5E5", relief = GROOVE)
 	button1.place(x = 490,y = 150)
 
-	button2 = Button(menu, text = "RUN MODE", width=12,anchor = "center" , command = btn_Run, pady=10)
+	button2 = Button(menu, text = "RUN MODE", width=13,anchor = "center" , command = btn_Run, pady=10)
 	button2['font'] = myfont
 	button2.configure(activebackground = "#33B5E5", relief = GROOVE)
 	button2.place(x = 490,y = 250)
@@ -211,14 +211,14 @@ def Menu(maze):
 	img3 = img3.resize((unit*2,unit*2), Image.ANTIALIAS)
 	img3 = ImageTk.PhotoImage(img3)
 
-	button3 = Button(menu,image = img3, command= btn_Shy )
+	button3 = Button(menu,image = img3, command= btn_Shy, border = 5 )
 	button3.place(x = 490,y = 350)
 
 	img4 = Image.open("../IMAGE/angry.png")
-	img4 = img4.resize((unit*2,unit*2), Image.ANTIALIAS)
+	img4 = img4.resize((unit*2+4,unit*2), Image.ANTIALIAS)
 	img4 = ImageTk.PhotoImage(img4)
 
-	button4 = Button(menu,image = img4, command= btn_Angry )
+	button4 = Button(menu,image = img4, command= btn_Angry, border = 5 )
 	button4.place(x = 490 + unit*2,y = 350)
 
 
@@ -351,19 +351,19 @@ def Play(m,a_mode):
 
 	top.mainloop()
 
-def generate_data():
+def generate_data(index):
 	temp = ""
 	for w in ListWumpus:
 		for s in w.ListStench:
-			if Agent.index == s.index :
+			if index == s.index :
 				temp += "S"
 
 	for b in ListBreeze:
-		if Agent.index == b.index:
+		if index == b.index:
 			temp += "B"
 
 	for g in ListGold:
-		if Agent.index == g.index:
+		if index == g.index:
 			temp += "G"
 	if temp == "":
 		temp = "-"
@@ -373,6 +373,7 @@ def RunAlgorithm():
 	global top
 	global Agent
 	global lst
+	global score
 
 	init_index = Agent.init_room
 
@@ -394,7 +395,14 @@ def RunAlgorithm():
 		if decision[1]: # Shoot
 			Agent.facing_to(goal,C,top)
 			Shoot()
-			Agent.update_visited((Agent.index, generate_data(), True))
+			rq = Agent.Request_Update_Visited(goal)
+
+			for r in rq:
+				Agent.update_visited((r,generate_data(r), True))
+				pre = []
+				for adj in ListAdjacency[r]:
+					pre.append(adj[0])
+				Agent.update_predicted(r, pre)
 
 		# go last tile
 		Agent.tile_move(goal, C, top)
@@ -402,7 +410,7 @@ def RunAlgorithm():
 		top.update()
 		time.sleep(0.2)
 
-		l = [(Agent.index, generate_data())]
+		l = [(Agent.index, generate_data(Agent.index))]
 		for adj in ListAdjacency[Agent.index]:
 			l.append(adj[0]) 
 
@@ -414,6 +422,8 @@ def RunAlgorithm():
 	path = Agent.ClimbOut(C)
 	for i in path:
 		Agent.tile_move(i,C,top)
+		score -= 10
+		display_score()
 		top.update()
 		time.sleep(0.2)
 
